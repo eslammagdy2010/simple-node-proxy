@@ -4,6 +4,7 @@ const fetch = require("node-fetch");
 const app = express();
 
 app.get("/proxy", async (req, res) => {
+
   const url = req.query.url;
 
   if (!url) {
@@ -11,28 +12,29 @@ app.get("/proxy", async (req, res) => {
   }
 
   try {
+
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "User-Agent": "VLC/3.0.18 LibVLC/3.0.18",
         "Accept": "*/*",
-        "Connection": "keep-alive"
+        "Connection": "keep-alive",
+        "Referer": "http://mvo25.in/",
+        "Origin": "http://mvo25.in"
       }
     });
 
-    const contentType = response.headers.get("content-type");
-
     res.set("Access-Control-Allow-Origin", "*");
-
-    if (contentType.includes("application/json")) {
-      const json = await response.json();
-      return res.json(json);
-    }
+    res.set("Content-Type", response.headers.get("content-type"));
 
     response.body.pipe(res);
 
   } catch (err) {
-    res.status(500).send("Proxy error");
+
+    console.log(err);
+    res.status(500).send("Stream relay error");
+
   }
+
 });
 
 app.listen(process.env.PORT || 3000);
