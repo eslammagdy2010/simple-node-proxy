@@ -3,32 +3,39 @@ const fetch = require("node-fetch");
 
 const app = express();
 
-app.get("/proxy", async (req, res) => {
-  const url = req.query.url;
+const API =
+"https://eslam-magdy-api.hmimo3000.workers.dev/channel.php?id=";
 
-  if (!url) {
-    return res.status(400).send("Missing url parameter");
+app.get("/proxy", async (req, res) => {
+
+  const id = req.query.id;
+
+  if (!id) {
+    return res.send("Missing channel id");
   }
 
   try {
-    const response = await fetch(url, {
+
+    const apiResponse = await fetch(API + id);
+    const streamUrl = await apiResponse.text();
+
+    const stream = await fetch(streamUrl, {
       headers: {
-        "User-Agent": "Mozilla/5.0",
-        "Referer": "https://www.bein.com/"
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        Referer: "https://connect.bein.com/"
       }
     });
 
-    const contentType = response.headers.get("content-type");
-
     res.set("Access-Control-Allow-Origin", "*");
-    res.set("Content-Type", contentType);
-
-    response.body.pipe(res);
+    stream.body.pipe(res);
 
   } catch (err) {
-    res.status(500).send("Proxy error");
+
+    res.send("Stream error");
+
   }
+
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server running"));
+app.listen(process.env.PORT || 3000);
